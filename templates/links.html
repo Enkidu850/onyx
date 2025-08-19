@@ -1,0 +1,166 @@
+<!doctype html>
+<html lang="fr">
+<head>
+	<meta charset="UTF-8" />
+	<meta name="viewport" content="width=device-width, initial-scale=1" />
+	<title>Onyx</title>
+	<link rel="stylesheet" href="{{ url_for('static', filename='shared.css') }}" />
+	<link rel="stylesheet" href="{{ url_for('static', filename='links.css') }}" />
+	<link rel="icon" href="{{ url_for('static', filename='onyx.png') }}" type="image/png" />
+
+	<link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
+	<script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+
+	<script src="https://use.fontawesome.com/releases/v6.3.0/js/all.js" crossorigin="anonymous"></script>
+</head>
+<body>
+	<div class="wrap {% if wiki_box %}with-wiki{% endif %}">
+		<div class="header" onclick="window.location.href = window.location.origin + window.location.pathname">
+			<img src="{{ url_for('static', filename='onyx.png') }}" alt="Onyx logo" class="logo" />
+			<h1 class="title"><span class="fill-letter o">O</span>nyx</h1>
+		</div>
+		<form class="search" method="GET" action="/">
+			<input type="text" name="q" placeholder="Rechercher…" value="{{ q|e }}" autofocus />
+			<button type="submit">Rechercher</button>
+		</form>	
+
+		<div class="tabs">
+			{% if mode == 'web' %}<strong>Tous</strong>{% else %}<a href="/?q={{ q|urlencode }}">Tous</a>{% endif %}
+			{% if mode == 'images' %}<strong>Images</strong>{% else %}<a href="/images?q={{ q|urlencode }}">Images</a>{% endif %}
+		</div>
+
+		{% if info %}
+			<div class="meta">≈ {{ info.totalResults }} résultats ({{ info.searchTime }} s)</div>
+		{% endif %}
+
+		<div class="results-area">
+
+			{% if results %}
+			<!-- Encadrés de tous les liens -->
+			<div style="flex:3;">
+				{% for item in results %}
+					<div class="card">
+						<div style="display:flex;align-items:center;gap:8px;">
+						<img src="{{ item.favicon }}" alt="favicon" width="16" height="16">
+						<a href="{{ item.link }}" target="_blank" rel="noopener">{{ item.title }}</a>
+					</div>
+					<div class="url">{{ item.displayLink }}</div>
+					{% if item.snippet %}
+							<div class="snippet">{{ item.snippet }}</div>
+					{% endif %}
+					</div>
+				{% endfor %}
+			</div>
+
+			{% if wiki_box or osm_box %}
+				<div>
+					<!-- Encadré wikipedia -->
+					{% if wiki_box %}
+					<div style="flex:1;">
+						<div class="card" style="padding:10px;">
+							{% if wiki_box.thumbnail %}
+								<img src="{{ wiki_box.thumbnail }}" alt="Illustration" style="max-width:100%;border-radius:8px;">
+							{% endif %}
+							<h3>{{ wiki_box.title }}</h3>
+							<p>{{ wiki_box.extract }}</p>
+							<a href="{{ wiki_box.link }}" target="_blank">Lire sur Wikipedia</a>
+						</div>
+					</div>
+					{% endif %}
+
+					<!-- Encadré OSM -->
+					{% if osm_box %}
+					<div class="card map">
+
+						<div id="osm-map" style="height:300px;border-radius:12px;overflow:hidden;"></div>
+
+						<!-- Remplace les , par des \n -->
+						{% for part in osm_box.display_name.split(',') %}
+							{% if loop.index == 1 %}
+								<h3 style="margin: 0; margin-top: 1rem;">{{ part.strip() }}</h3>
+							{% else %}
+								<h4 style="margin: 0; color: #c8cee2;">{{ part.strip() }}</h4>
+							{% endif %}
+						{% endfor %}
+						
+						<p>Type : {{ osm_box.type }}</p>
+						{% if osm_box.address %}
+						<p>
+							Adresse :
+							{{ osm_box.address.road or '' }}
+							{{ osm_box.address.postcode or '' }}
+							{{ osm_box.address.city or osm_box.address.town or osm_box.address.village or '' }}
+							{{ osm_box.address.country or '' }}
+						</p>
+						{% endif %}
+						{% if osm_box.opening_hours %}
+						<p>Horaires : {{ osm_box.opening_hours }}</p>
+						{% endif %}
+					
+						
+					
+						<script>
+							// Si vscode dit qu'il y a des erreurs sur le JS tkt
+							(function () {
+								const lat = parseFloat({{ osm_box.lat | tojson }});
+								const lon = parseFloat({{ osm_box.lon | tojson }});
+								const name = {{ osm_box.display_name | tojson }};
+
+								const map = L.map('osm-map', { scrollWheelZoom: false }).setView([lat, lon], 15);
+								L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+									maxZoom: 19,
+									attribution: '&copy; OpenStreetMap contributors'
+								}).addTo(map);
+
+								L.marker([lat, lon]).addTo(map).bindPopup(name);
+
+								// Corrige le centrage après que la div soit affichée
+								setTimeout(() => {
+									map.invalidateSize();
+									map.setView([lat, lon], 15);
+								}, 200);
+							}) ();
+						</script>
+					</div>
+					{% endif %}
+				</div>
+			{% endif %}
+		</div>
+
+		<div class="pager">
+			{% if prev_start %}
+				<a href="?q={{ q|urlencode }}&start={{ prev_start }}">🡨 Précédent</a>
+			{% else %}
+				<span>🡨 Précédent</span>
+			{% endif %}
+
+			{% if next_start %}
+				<a href="?q={{ q|urlencode }}&start={{ next_start }}">Suivant 🡪</a>
+			{% else %}
+				<span>Suivant 🡪</span>
+			{% endif %}
+		</div>
+
+		{% elif q %}
+			<div class="meta">Aucun résultat.
+				{% if error %}<br/>Erreur: {{ error }}{% endif %}
+			</div>
+		{% endif %}
+
+		<div class="counter">Requêtes API aujourd'hui: {{ count }}/100</div>
+
+		<footer>
+			<div class="footer-content">
+				<span>
+					Propulsé par l'API Google Custom Search — contenu sous licence libre CC BY-SA 4.0.
+				</span>
+
+				<a href="https://github.com/Enkidu850/" target="_blank" rel="noopener">
+					<i class="fa-brands fa-github" style="font-size: 2.5rem; color: #3a4680;"></i>
+				</a>
+			</div>
+		</footer>
+
+	</div>
+</body>
+</html>

@@ -1,0 +1,72 @@
+<!doctype html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Onyx</title>
+        <link rel="stylesheet" href="{{ url_for('static', filename='shared.css') }}" />
+        <link rel="stylesheet" href="{{ url_for('static', filename='images.css') }}" />
+        <link rel="icon" href="{{ url_for('static', filename='onyx.png') }}" type="image/png" />
+</head>
+<body>
+    <div class="wrap">
+        <div class="header" onclick="window.location.href = window.location.origin + window.location.pathname">
+            <img src="{{ url_for('static', filename='onyx.png') }}" alt="Onyx logo" class="logo" />
+            <h1 class="title"><span class="fill-letter o">O</span>nyx</h1>
+        </div>
+        <form class="search" method="GET" action="/images">
+            <input type="text" name="q" placeholder="Rechercher des images…" value="{{ q|e }}" autofocus />
+            <button type="submit">Rechercher</button>
+        </form>
+
+        <div class="tabs">
+            {% if mode == 'web' %}<a href="/?q={{ q|urlencode }}">Tous</a>{% else %}<a href="/?q={{ q|urlencode }}">Tous</a>{% endif %}
+            {% if mode == 'images' %}<strong>Images</strong>{% else %}<a href="/images?q={{ q|urlencode }}">Images</a>{% endif %}
+        </div>
+
+        {% if results %}
+            <div class="grid">
+                {% for item in results %}
+                    <div class="img-card">
+                        <a href="{{ item.context }}" target="_blank">
+                            <img src="{{ item.thumbnail }}" alt="image"/>
+                        </a>
+                        <a href="{{ item.link }}" target="_blank">Image originale</a>
+                    </div>
+                {% endfor %}
+            </div>
+
+            <div class="pager">
+                {% if prev_start %}
+                    <a href="?q={{ q|urlencode }}&start={{ prev_start }}">🡨 Précédent</a>
+                {% else %}
+                    <span>🡨 Précédent</span>
+                {% endif %}
+
+                {% if next_start %}
+                    <a href="?q={{ q|urlencode }}&start={{ next_start }}">Suivant 🡪</a>
+                {% else %}
+                    <span>Suivant 🡪</span>
+                {% endif %}
+            </div>
+        {% elif q %}
+              <div class="meta">Aucune image trouvée.
+                    {% if error %}<br/>Erreur: {{ error }}{% endif %}
+              </div>
+        {% endif %}
+
+        <div class="counter">Requêtes API aujourd'hui: {{ count }}/100</div>
+        <footer>
+            <div class="footer-content">
+                <span>
+                    Propulsé par l'API Google Custom Search — contenu sous licence libre CC BY-SA 4.0.
+                </span>
+        
+                <a href="https://github.com/Enkidu850/" target="_blank" rel="noopener">
+                    <i class="fa-brands fa-github" style="font-size: 2.5rem; color: #3a4680;"></i>
+                </a>
+            </div>
+        </footer>
+    </div>
+</body>
+</html>

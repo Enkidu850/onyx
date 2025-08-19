@@ -1,0 +1,52 @@
+
+.wrap {
+    max-width: 900px;
+    margin: 0 auto;
+    padding: 24px;
+}
+.wrap.with-wiki {
+    max-width: 1300px;
+}
+
+.results-area {
+    display: flex;
+    gap: 20px;
+    align-items: flex-start;
+  }
+  
+  .results-area > div:first-child {
+    flex: 3;
+  }
+  
+  .results-area > div:last-child {
+    flex: 1;
+  }
+  
+
+.meta {
+    margin-top: 12px;
+    color: var(--muted);
+    font-size: 14px;
+}
+.card {
+    background: var(--card);
+    border: 1px solid #1f2750;
+    border-radius: 18px;
+    padding: 16px 18px;
+    margin: 16px 0;
+}
+.card a {
+    color: var(--accent);
+    text-decoration: none;
+}
+.url {
+    color: #a3b2d9;
+    font-size: 13px;
+    margin-top: 4px;
+    word-break: break-all;
+}
+.snippet {
+    margin-top: 8px;
+    line-height: 1.5;
+    color: #d6ddff;
+}

@@ -1,0 +1,33 @@
+
+.wrap {
+    max-width: 1100px;
+    margin: 0 auto;
+    padding: 24px;
+}
+
+.grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: 16px;
+    margin-top: 20px;
+}
+.img-card {
+    background: var(--card);
+    border-radius: 12px;
+    overflow: hidden;
+    padding: 8px;
+    text-align: center;
+}
+.img-card img {
+    max-width: 100%;
+    height: auto;
+    border-radius: 8px;
+}
+.img-card a {
+    display: block;
+    margin-top: 6px;
+    font-size: 13px;
+    color: var(--accent);
+    text-decoration: none;
+    word-break: break-all;
+}
